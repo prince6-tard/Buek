@@ -1,0 +1,227 @@
+/**
+ * app/globals.css — Global styles for Buek.
+ *
+ * Sections (search by section header):
+ *  1. Tailwind directives + Google Fonts
+ *  2. Global reset (box-sizing, margin, overflow)
+ *  3. Lighting mode body classes (candlelight, daylight, moonlight, fireplace)
+ *  4. Keyframe animations (flicker, shimmer, fadeIn, pulse-soft)
+ *  5. Parchment page textures & binding shadows
+ *  6. Focus vignette gradient
+ *  7. Scrollbar styling
+ *  8. PageFlip container overrides
+ *  9. Selection highlight & annotation styles
+ * 10. Utility: number-input spinner removal (go-to-page)
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+/* ─── Global Reset ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'IM Fell English', 'Libre Baskerville', serif;
+  transition: background-color 0.8s ease, color 0.8s ease;
+  overflow: hidden;
+}
+
+/* Allow scrolling on landing page */
+body.landing-page {
+  overflow: auto;
+}
+
+/* ─── Lighting Mode Bodies ──────────────────────────────────── */
+body.lighting-candlelight {
+  background-color: #2C1810;
+  color: #f5e6c8;
+}
+body.lighting-daylight {
+  background-color: #6B5B4B;
+  color: #3d2b1f;
+}
+body.lighting-moonlight {
+  background-color: #1a1a2e;
+  color: #e8eaf0;
+}
+body.lighting-fireplace {
+  background-color: #1C0A00;
+  color: #f5e6c8;
+}
+
+/* ─── Candlelight Flicker ───────────────────────────────────── */
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  25%,
+  75% {
+    opacity: 0.99;
+  }
+  50% {
+    opacity: 0.97;
+  }
+}
+
+.flicker-overlay {
+  animation: flicker 3s infinite;
+  pointer-events: none;
+}
+
+/* ─── Parchment Page ────────────────────────────────────────── */
+.parchment-page {
+  background-color: #f5e6c8;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 28px,
+    rgba(139, 90, 43, 0.03) 28px,
+    rgba(139, 90, 43, 0.03) 29px
+  );
+  box-shadow: inset 0 0 60px rgba(139, 90, 43, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.parchment-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 150px 150px;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Left page binding shadow */
+.page-left {
+  box-shadow: inset -8px 0 20px rgba(139, 90, 43, 0.2),
+    inset 0 0 60px rgba(139, 90, 43, 0.15);
+}
+
+/* Right page binding shadow */
+.page-right {
+  box-shadow: inset 8px 0 20px rgba(139, 90, 43, 0.2),
+    inset 0 0 60px rgba(139, 90, 43, 0.15);
+}
+
+/* ─── Moonlight page tint ───────────────────────────────────── */
+.lighting-moonlight .parchment-page {
+  background-color: #e8eaf0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 28px,
+    rgba(100, 110, 140, 0.04) 28px,
+    rgba(100, 110, 140, 0.04) 29px
+  );
+}
+
+/* ─── Focus Vignette ────────────────────────────────────────── */
+.focus-vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.72) 100%
+  );
+}
+
+/* ─── Shimmer Skeleton ──────────────────────────────────────── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-skeleton {
+  background: linear-gradient(
+    90deg,
+    #f5e6c8 25%,
+    #efe0b5 50%,
+    #f5e6c8 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(139, 90, 43, 0.1);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 90, 43, 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 90, 43, 0.6);
+}
+
+/* ─── PageFlip container ────────────────────────────────────── */
+.stf__parent {
+  margin: 0 auto;
+}
+
+/* Selection highlight */
+::selection {
+  background: rgba(245, 166, 35, 0.35);
+}
+
+/* ─── Highlight annotation ──────────────────────────────────── */
+.annotated-paragraph {
+  background: rgba(245, 166, 35, 0.22);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.annotated-paragraph:hover {
+  background: rgba(245, 166, 35, 0.38);
+}
+
+/* ─── Smooth focus transitions ──────────────────────────────── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Number input - remove spinners (for go-to-page) */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
