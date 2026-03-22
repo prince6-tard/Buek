@@ -10,6 +10,12 @@ export async function POST(req) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
+    // SCALING OPTIMIZATION: Prevent Out-Of-Memory (OOM) crashes by enforcing a strict 5MB limit
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'File size exceeds the 5MB maximum limit. Please upload a smaller PDF.' }, { status: 413 });
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 

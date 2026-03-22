@@ -1,6 +1,7 @@
 import { streamText } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
+// We now explicitly tell the Vercel SDK to use your specific environment variable
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 });
@@ -12,16 +13,22 @@ export async function POST(req) {
   try {
     const { userQuestion, selectedText, bookContext } = await req.json();
 
+    // SCALING OPTIMIZATION: Truncate massive incoming strings to prevent Payload Too Large (413) 
+    // and to safely stay well within the AI provider's maximum token limits.
+    const safeSelectedText = (selectedText || '').slice(0, 5000);
+    const safeBookContext = (bookContext || '').slice(0, 20000);
+
     const systemPrompt = `You are an expert literary analyst.
 Use the following context from the book to explain the meaning, author's intent, and essence of the selected text based on the user's question.
 
 Book Context:
-${bookContext || 'No context provided.'}`;
+${safeBookContext || 'No context provided.'}`;
 
-    const prompt = `Selected Text: "${selectedText}"\n\nUser Question: ${userQuestion}`;
+    const prompt = `Selected Text: "${safeSelectedText}"\n\nUser Question: ${userQuestion}`;
 
     const result = await streamText({
-      model: google('gemini-1.5-flash'), 
+      // Updated to 2.5-flash since 1.5 is retired
+      model: google('gemini-2.5-flash'), 
       system: systemPrompt,
       prompt: prompt,
     });
@@ -30,7 +37,7 @@ ${bookContext || 'No context provided.'}`;
     return result.toTextStreamResponse();
   } catch (error) {
     console.error("Error in chat route:", error);
-    return new Response(JSON.stringify({ error: "Failed to generate reply" }), { 
+    return new Response(JSON.stringify({ error: error.message || "Failed to generate reply" }), { 
       status: 500, 
       headers: { 'Content-Type': 'application/json' } 
     });
