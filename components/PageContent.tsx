@@ -49,6 +49,7 @@ const PageContent = forwardRef<HTMLDivElement, PageContentProps>(
       >
         {/* The actual PDF page rendered as an image, or a "failed" placeholder */}
         {imageSrc ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={imageSrc}
             alt={isCover ? 'Book cover' : `Page ${pageNumber}`}

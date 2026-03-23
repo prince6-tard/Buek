@@ -159,6 +159,7 @@ export default function ReaderPage() {
     bookmarkPanelOpen,
     notesPanelOpen,
     aiChatPanelOpen,
+    setAiChatPanelOpen,
     focusMode,
   ])
 
