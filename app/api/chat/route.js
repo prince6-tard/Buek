@@ -9,8 +9,36 @@ const google = createGoogleGenerativeAI({
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
+// Simple in-memory rate limit Map
+const rateLimitMap = new Map();
+const LIMIT = 5;
+const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 export async function POST(req) {
   try {
+    // --- RATE LIMITING LOGIC ---
+    const ip = req.headers.get('x-forwarded-for') || req.ip || 'unknown-ip';
+    const now = Date.now();
+    const userRateData = rateLimitMap.get(ip) || { count: 0, firstRequestTime: now };
+
+    if (now - userRateData.firstRequestTime > WINDOW_MS) {
+      // Reset after 24 hours
+      userRateData.count = 1;
+      userRateData.firstRequestTime = now;
+    } else {
+      userRateData.count += 1;
+    }
+
+    rateLimitMap.set(ip, userRateData);
+
+    if (userRateData.count > LIMIT) {
+       return new Response(JSON.stringify({ error: "Rate limit exceeded. You can only send 5 messages per day." }), { 
+         status: 429, 
+         headers: { 'Content-Type': 'application/json' } 
+       });
+    }
+    // --- END RATE LIMITING LOGIC ---
+
     const { userQuestion, selectedText, bookContext } = await req.json();
 
     // SCALING OPTIMIZATION: Truncate massive incoming strings to prevent Payload Too Large (413) 
@@ -27,7 +55,7 @@ ${safeBookContext || 'No context provided.'}`;
     const prompt = `Selected Text: "${safeSelectedText}"\n\nUser Question: ${userQuestion}`;
 
     const result = await streamText({
-      // Updated to 2.5-flash since 1.5 is retired
+     
       model: google('gemini-2.5-flash'), 
       system: systemPrompt,
       prompt: prompt,
